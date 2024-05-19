@@ -37,7 +37,7 @@ class Trait
             return []
         else
             removed_methods = removed_methods + trait.removed_methods
-            if trait.redefined != nil and trait.redefined.has_method(method_name)
+            if trait.redefined != nil and trait.redefined.has_method(method_name) and not trait.removed_methods.include?(method_name)
                 [trait.redefined]
             else
                 if trait.holder_module.instance_methods.include?(method_name) and not removed_methods.include?(method_name)
