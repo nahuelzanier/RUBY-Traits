@@ -27,8 +27,8 @@ class Trait
 
         @classes_applied.push(a_class)
 
-        apply_requirements(self, a_class)
         apply_methods(self, a_class)
+        apply_requirements(self, a_class)
     end
 
     #LOOKUP

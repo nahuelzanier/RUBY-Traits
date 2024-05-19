@@ -430,4 +430,24 @@ describe '# trait #' do
         expect(array).to eq(["trait01", "trait02"])
     end
 
+    it 'other trait can satisfy the requirements of traits' do
+        trait_01 = Trait.from_block do
+            requires :method_x
+            def m01
+                method_x
+            end
+        end
+        trait_02 = Trait.from_block do
+            def method_x
+                'this was required'
+            end
+        end
+
+        a_class = Class.new do
+            uses (trait_01 + trait_02)
+        end
+        an_instance = a_class.new
+
+        expect(an_instance.m01).to eq('this was required')
+    end
 end
