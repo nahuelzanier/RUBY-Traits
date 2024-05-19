@@ -125,8 +125,8 @@ class Trait
         already_a_method = false
         already_a_requirement = false
         alias_hash.values.each do |method_name|
-            already_a_method = has_method(method_name)
-            already_a_requirement = has_requirement(method_name)
+            already_a_method = (already_a_method or has_method(method_name))
+            already_a_requirement = (already_a_requirement or has_requirement(method_name))
         end
         if already_a_method
             raise NameError.new "#Trait exception# - One of the new method names is already being used"
