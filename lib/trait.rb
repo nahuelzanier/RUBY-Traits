@@ -11,6 +11,7 @@ class Trait
             @holder_module = holder_module
         end
         @classes_applied = []
+        @parent_trait = nil
     end
 
     def self.from_block(&block)
@@ -112,12 +113,18 @@ class Trait
 
     #OPERATIONS
     def +(trait)
-        Trait.new(trait01:self, trait02:trait)
+        new_trait = Trait.new(trait01:self, trait02:trait)
+        self.set_parent_trait(new_trait)
+        if trait != nil
+            trait.set_parent_trait(new_trait)
+        end
+        new_trait
     end
 
     def -(method_name)
-        removed = (self.removed_methods.clone).push(method_name)
-        Trait.new(trait01:self, trait02:nil, removed_methods:removed)
+        new_trait = Trait.new(trait01:self, trait02:nil, removed_methods:[method_name])
+        self.set_parent_trait(new_trait)
+        new_trait
     end
 
     #ALIAS
@@ -134,11 +141,13 @@ class Trait
             if already_a_requirement
                 raise NameError.new "#Trait exception# - One of the new method names matches that of a requirement"
             else
-                new_trait = Trait.new(trait01:self)
                 alias_hash.each do |original_name, new_name|
-                    new_trait.holder_module.define_method(new_name, get_implementation(self, original_name))
+                    self.holder_module.define_method(new_name, get_implementation(self, original_name))
                 end
-                new_trait
+                classes_applied_tree(self).each do |a_class|
+                    apply_methods_to(a_class)
+                end
+                self
             end
         end
     end
@@ -181,7 +190,7 @@ class Trait
                 raise NameError.new "#Trait exception# - One of the new method names matches that of a requirement"
             else
                 @holder_module.define_method(method_name, block)
-                @classes_applied.each do |a_class|
+                classes_applied_tree(self).each do |a_class|
                     apply_methods_to(a_class)
                 end
             end
@@ -253,6 +262,22 @@ class Trait
         traits = lookup(trait, method_name, trait.removed_methods)
         traits.map do |trait|
             trait.holder_module.instance_method(method_name)
+        end
+    end
+    def parent_trait
+        @parent_trait
+    end
+    def set_parent_trait(trait)
+        @parent_trait = trait
+    end
+    def classes_applied
+        @classes_applied
+    end
+    def classes_applied_tree(trait)
+        if trait == nil
+            return []
+        else
+            trait.classes_applied + classes_applied_tree(trait.parent_trait)
         end
     end
 

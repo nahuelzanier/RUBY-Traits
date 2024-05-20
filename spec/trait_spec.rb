@@ -419,8 +419,6 @@ describe '# trait #' do
             an_instance.message
         }.to raise_error(NameError, "#Trait exception# - There's an unresolved conflict with the method")
 
-        print((trait_01 + trait_02).get_implementations((trait_01 + trait_02), :message))
-
         a_class.traits.redefine_method(:message) { |method, *args|
                 method.call(*args)
         }
@@ -449,5 +447,54 @@ describe '# trait #' do
         an_instance = a_class.new
 
         expect(an_instance.m01).to eq('this was required')
+    end
+
+    it 'defining a new method to a trait it can now be called from all the classes that use that trait even indirectly' do
+        trait_01 = Trait.from_block do
+            def m01
+                'm01'
+            end
+        end
+        trait_02 = Trait.from_block do
+            def m02
+                'm02'
+            end
+        end
+
+        a_class = Class.new do
+            uses (trait_01 + trait_02)
+        end
+        an_instance = a_class.new
+
+        trait_01.define_method(:new_method) { self }
+
+        expect(an_instance.new_method).to eq(an_instance)
+    end
+
+    it 'defining an alias for a method to a trait can now be called from all the classes that use that trait even indirectly' do
+        trait_01 = Trait.from_block do
+            def m01
+                'm01'
+            end
+        end
+        trait_02 = Trait.from_block do
+            def m02
+                'm02'
+            end
+        end
+
+        a_class = Class.new do
+            uses (trait_01 + trait_02)
+        end
+        an_instance = a_class.new
+
+        trait_01 << {m01: :new_name01}
+        trait_02 << {m02: :new_name02}
+
+        expect(an_instance.m01).to eq('m01')
+        expect(an_instance.m02).to eq('m02')
+        expect(an_instance.new_name01).to eq('m01')
+        expect(an_instance.new_name02).to eq('m02')
+        
     end
 end
