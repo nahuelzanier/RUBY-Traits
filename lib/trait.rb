@@ -1,5 +1,6 @@
 class Trait
 
+    # traits are implemented using a type of tree structure to make them dynamic
     def initialize(trait01:nil, trait02:nil, holder_module:nil, removed_methods:[])
         @trait01 = trait01
         @trait02 = trait02
@@ -14,6 +15,7 @@ class Trait
         @parent_trait = nil
     end
 
+    #creates a trait from a block
     def self.from_block(&block)
         holder_module = get_aux_module
         holder_module.class_exec(&block)
@@ -34,6 +36,8 @@ class Trait
     end
 
     #LOOKUP
+    # this method returns an array of all the traits that implement a particular method
+    # if a trait has a redefined method, it returns it instead
     def lookup(trait, method_name, removed_methods)
         if trait == nil
             return []
@@ -60,6 +64,8 @@ class Trait
         end
     end
 
+    # applies to the class the trait methods, not the implementations itself but a way to use the trait lookup method
+    # the implementation is still held in the trait itself.
     def apply_methods_to(a_class)
         @holder_module.instance_methods(false).each do |method_name|
             unless a_class.instance_methods(false).include?(method_name)
@@ -90,6 +96,7 @@ class Trait
         end
     end
 
+    # the requirements add the method to the class (if it doesn't already have it) wich raises an exception
     def add_required_methods(trait, a_class)
         trait.required_methods.each do |method_name|
             unless a_class.instance_methods(true).include?(method_name)
@@ -112,6 +119,7 @@ class Trait
     end
 
     #OPERATIONS
+    #SUM
     def +(trait)
         new_trait = Trait.new(trait01:self, trait02:trait)
         self.set_parent_trait(new_trait)
@@ -121,6 +129,7 @@ class Trait
         new_trait
     end
 
+    #SUBSTRACTION
     def -(method_name)
         new_trait = Trait.new(trait01:self, trait02:nil, removed_methods:[method_name])
         self.set_parent_trait(new_trait)
@@ -152,6 +161,7 @@ class Trait
         end
     end
 
+    # returns the implementation of a method if there's no conflicts
     def get_implementation(trait, method_name)
         traits = lookup(trait, method_name, trait.removed_methods)
         if traits.length > 1
@@ -208,7 +218,6 @@ class Trait
                 block.call(method.bind(self), *args)
             end
         }
-
         @redefined.define_method(method_name, &res_proc)
     end
 
@@ -281,6 +290,8 @@ class Trait
         end
     end
 
+
+    
 end
 
 class Class
