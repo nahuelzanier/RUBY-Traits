@@ -71,7 +71,7 @@ class Trait
             unless a_class.instance_methods(false).include?(method_name)
                 trait = self
                 lookup_proc = Proc.new { |*args|
-                    holder_traits = self.class.traits.lookup(self.class.traits, method_name, self.class.traits.removed_methods)
+                    holder_traits = self.class.traits.lookup(self.class.traits, method_name, self.class.traits.removed_methods.clone)
                     if holder_traits.length == 1
                         holder_traits[0].holder_module.instance_method(method_name).bind(self).call(*args)
                     else
@@ -163,7 +163,7 @@ class Trait
 
     # returns the implementation of a method if there's no conflicts
     def get_implementation(trait, method_name)
-        traits = lookup(trait, method_name, trait.removed_methods)
+        traits = lookup(trait, method_name, trait.removed_methods.clone)
         if traits.length > 1
             raise NameError.new "#Trait exception# - There's an unresolved conflict with the method"
         else
@@ -268,7 +268,7 @@ class Trait
         @redefined
     end
     def get_implementations(trait, method_name)
-        traits = lookup(trait, method_name, trait.removed_methods)
+        traits = lookup(trait, method_name, trait.removed_methods.clone)
         traits.map do |trait|
             trait.holder_module.instance_method(method_name)
         end
@@ -290,8 +290,6 @@ class Trait
         end
     end
 
-
-    
 end
 
 class Class
