@@ -161,13 +161,13 @@ m01 but not to m02. The original a_trait can still be used intact on other class
         	a_trait = Trait.from_block do
             	   requires :m01, :m02
 
-            	     def message_01
-                	                 m01
+            	    def message_01
+                	 m01
             	    end
-            	   def message_02
+            	    def message_02
                         m02
-               	   end
-      	  end
+               	    end
+      	 	 end
 
 
 # you can specify an alias for a trait method
